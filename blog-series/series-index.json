@@ -1,0 +1,151 @@
+{
+  "series": {
+    "title": "Spring Boot로 배우는 도서관리 시스템 개발",
+    "description": "Spring Boot 3.5와 Java 21을 활용한 실무 중심의 도서관리 시스템 개발 연재",
+    "author": "Spring Boot 실무 개발자",
+    "startDate": "2024-01-26",
+    "status": "ongoing",
+    "totalEpisodes": 5,
+    "repository": "https://github.com/example/day-by-spring",
+    "tags": ["SpringBoot", "Java21", "JPA", "도서관리시스템", "실무개발", "연재", "튜토리얼"]
+  },
+  "episodes": [
+    {
+      "episode": 1,
+      "title": "회원 관리 시스템 구현: 테스트부터 이벤트까지",
+      "filename": "01-member-management.md",
+      "status": "published",
+      "publishDate": "2024-01-26",
+      "readingTime": "25분",
+      "difficulty": "초급",
+      "topics": [
+        "DTO 설계",
+        "Event-Driven Architecture", 
+        "캐싱 전략",
+        "Bean Validation",
+        "테스트 전략"
+      ],
+      "implementations": [
+        "MemberService",
+        "MemberController", 
+        "MemberRepository",
+        "Event 시스템",
+        "Cache 설정"
+      ],
+      "nextEpisode": 2,
+      "prerequisites": ["Spring Boot 기본 지식", "JPA 기본 개념"]
+    },
+    {
+      "episode": 2,
+      "title": "대여 관리 시스템 구현: 복잡한 비즈니스 로직 정복하기",
+      "filename": "02-loan-management.md", 
+      "status": "draft",
+      "publishDate": "2024-02-02",
+      "readingTime": "30분",
+      "difficulty": "중급",
+      "topics": [
+        "State Pattern",
+        "Saga Pattern", 
+        "Batch Processing",
+        "복잡한 비즈니스 규칙",
+        "스케줄링"
+      ],
+      "implementations": [
+        "LoanService",
+        "상태 관리",
+        "연체 처리",
+        "예약 시스템",
+        "알림 시스템"
+      ],
+      "previousEpisode": 1,
+      "nextEpisode": 3,
+      "prerequisites": ["1편 완주", "State Pattern 이해"]
+    },
+    {
+      "episode": 3,
+      "title": "도서 관리 시스템 구현: 검색과 파일 처리 마스터하기",
+      "filename": "03-book-management.md",
+      "status": "planned", 
+      "publishDate": "2024-02-09",
+      "readingTime": "28분",
+      "difficulty": "중급",
+      "topics": [
+        "검색 최적화",
+        "파일 업로드",
+        "외부 API 연동",
+        "Strategy Pattern",
+        "Observer Pattern"
+      ],
+      "implementations": [
+        "BookService",
+        "검색 기능",
+        "파일 처리",
+        "API 연동",
+        "재고 관리"
+      ],
+      "previousEpisode": 2,
+      "nextEpisode": 4,
+      "prerequisites": ["2편 완주", "파일 처리 기본 지식"]
+    },
+    {
+      "episode": 4,
+      "title": "주문 관리 시스템 구현: 결제와 트랜잭션 완벽 정복",
+      "filename": "04-order-management.md",
+      "status": "planned",
+      "publishDate": "2024-02-16", 
+      "readingTime": "32분",
+      "difficulty": "고급",
+      "topics": [
+        "결제 연동",
+        "트랜잭션 처리",
+        "재고 동기화",
+        "Factory Pattern",
+        "Command Pattern"
+      ],
+      "implementations": [
+        "OrderService",
+        "PaymentService", 
+        "재고 시스템",
+        "주문 처리",
+        "결제 검증"
+      ],
+      "previousEpisode": 3,
+      "nextEpisode": 5,
+      "prerequisites": ["3편 완주", "결제 시스템 이해"]
+    },
+    {
+      "episode": 5,
+      "title": "고급 기능 및 최적화: 운영환경 완벽 대비하기",
+      "filename": "05-advanced-features.md",
+      "status": "planned",
+      "publishDate": "2024-02-23",
+      "readingTime": "35분", 
+      "difficulty": "고급",
+      "topics": [
+        "성능 모니터링",
+        "보안 강화",
+        "로깅 전략",
+        "배포 전략",
+        "Decorator Pattern"
+      ],
+      "implementations": [
+        "메트릭 수집",
+        "알림 시스템",
+        "보안 설정", 
+        "CI/CD",
+        "운영 도구"
+      ],
+      "previousEpisode": 4,
+      "prerequisites": ["4편 완주", "운영 경험"]
+    }
+  ],
+  "learning_path": {
+    "beginner": [1, 2],
+    "intermediate": [1, 2, 3, 4], 
+    "advanced": [1, 2, 3, 4, 5]
+  },
+  "code_examples": {
+    "base_url": "https://github.com/example/day-by-spring/tree/main/src",
+    "test_examples": "https://github.com/example/day-by-spring/tree/main/src/test"
+  }
+}
