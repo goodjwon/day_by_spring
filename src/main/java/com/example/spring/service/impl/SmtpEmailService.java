@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-// 1. 이메일 서비스 구현체들
+// 1. 이메일 서비스 구현체들 예제.
 @Service
 @ConditionalOnProperty(name = "bookstore.email.smtp.enabled", havingValue = "true")
 @Slf4j
