@@ -27,10 +27,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        if (ex instanceof EntityNotFoundException) {
+        if (ex instanceof EntityNotFoundException || ex instanceof MemberNotFoundException) {
             status = HttpStatus.NOT_FOUND;
         } else if (ex instanceof DuplicateEmailException) {
-            status = HttpStatus.CONFLICT;
+            status = HttpStatus.BAD_REQUEST;
         }
         log.warn("Business exception: code={}, message={}", ex.getErrorCode(), ex.getMessage());
         return buildErrorResponse(status, ex.getErrorCode(), ex.getMessage(), request.getRequestURI());
@@ -50,8 +50,8 @@ public class GlobalExceptionHandler {
                         .build())
                 .collect(Collectors.toList());
         log.debug("Validation failed: {} errors", fieldErrors.size());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED",
-                "요청 데이터가 유효하지 않습니다.", request.getRequestURI(), fieldErrors);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
+                "입력값이 올바르지 않습니다", request.getRequestURI(), fieldErrors);
     }
 
     // 폼/쿼리 파라미터 바인딩 실패
@@ -108,10 +108,10 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .status(status.value())
                 .error(status.getReasonPhrase())
-                .code(code)
+                .errorCode(code)
                 .message(message)
                 .path(path)
-                .errors(fieldErrors == null || fieldErrors.isEmpty() ? null : fieldErrors)
+                .fieldErrors(fieldErrors == null || fieldErrors.isEmpty() ? null : fieldErrors)
                 .build();
         return ResponseEntity.status(status).body(body);
     }

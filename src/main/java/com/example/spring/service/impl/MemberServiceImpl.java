@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,14 +114,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<MemberResponse> findAllMembers(Pageable pageable) {
+    public Page<MemberResponse> findAllMembers(Pageable pageable) {
         log.debug("전체 회원 목록 조회 - 페이지: {}, 크기: {}", 
                  pageable.getPageNumber(), pageable.getPageSize());
         
-        return memberRepository.findAll()
+        List<MemberResponse> responses = memberRepository.findAll()
                 .stream()
                 .map(MemberResponse::from)
                 .collect(Collectors.toList());
+        
+        return new PageImpl<>(responses, pageable, responses.size());
     }
 
     @Override

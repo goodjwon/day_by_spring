@@ -17,12 +17,12 @@ public class ErrorResponse {
     private final int status;          // HTTP status code
     private final String error;        // HTTP status reason phrase
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final String code;         // 비즈니스 에러 코드 (예: DUPLICATE_EMAIL)
+    private final String errorCode;    // 비즈니스 에러 코드 (예: DUPLICATE_EMAIL)
     private final String message;      // 사용자 메시지
     private final String path;         // 요청 경로
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private final List<FieldError> errors; // 필드 검증 에러 목록
+    private final List<FieldError> fieldErrors; // 필드 검증 에러 목록
 
     @Getter
     @Builder
