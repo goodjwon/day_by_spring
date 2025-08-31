@@ -1,7 +1,5 @@
 package com.example.spring.service;
 
-import com.example.spring.config.TestDataConfig;
-import com.example.spring.config.TestDataManager;
 import com.example.spring.dto.request.CreateMemberRequest;
 import com.example.spring.dto.request.UpdateMemberRequest;
 import com.example.spring.dto.response.MemberLoanLimitInfo;
