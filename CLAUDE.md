@@ -92,12 +92,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build Tool**: Maven
 - **Code Generation**: Lombok for reducing boilerplate
 
+## Epic Implementation Status
+
+### ✅ Epic 1: Member Management System (COMPLETED)
+**Branch**: `feature/epic1-member-management`
+**Status**: Production Ready
+
+**Implemented Features**:
+- **MemberService**: Complete CRUD operations with business logic
+  - Member registration with duplicate email validation
+  - Membership upgrade system (REGULAR → PREMIUM)
+  - Member loan limit management
+  - Caching with `@Cacheable` and `@CacheEvict`
+  - Event publishing for member registration and upgrades
+  
+- **MemberController**: 9 REST API endpoints
+  - `POST /api/members` - Member registration
+  - `GET /api/members/{id}` - Member lookup
+  - `PUT /api/members/{id}` - Member information update
+  - `DELETE /api/members/{id}` - Member deletion
+  - `GET /api/members/search?name=홍` - Name-based search
+  - `PUT /api/members/{id}/membership?membershipType=PREMIUM` - Membership upgrade
+  - `GET /api/members/{id}/loan-limit` - Loan limit information
+  - `GET /api/members/email/validate?email=test@example.com` - Email validation
+  - `GET /api/members` - Paginated member list
+
+- **Testing**: Comprehensive test coverage
+  - MemberServiceImplTest: 21 unit tests (100% pass)
+  - MemberServiceTest: 10 unit tests (100% pass)
+  - MemberControllerTest: 21 controller tests (100% pass)
+
+- **Exception Handling**: Complete business exception system
+  - DuplicateEmailException, EntityNotFoundException, MembershipUpgradeException
+  - GlobalExceptionHandler with detailed error responses
+
+- **Event System**: Spring Events integration
+  - MemberRegisteredEvent, MembershipUpgradedEvent
+  - MemberEventListener for cross-cutting concerns
+
+### 🔄 Next Epic: Book Management System
+**Branch**: To be created (`feature/epic2-book-management`)
+**Scope**: Book CRUD, inventory management, search functionality
+
 ## Development Notes
 
 ### Running Tests
 Always use the test profile to ensure proper database configuration:
 ```bash
 mvn test -Dspring.profiles.active=test
+```
+
+**Epic 1 Test Commands**:
+```bash
+mvn test -Dtest=MemberServiceImplTest -Dspring.profiles.active=test
+mvn test -Dtest=MemberControllerTest -Dspring.profiles.active=test
 ```
 
 ### Database Initialization
