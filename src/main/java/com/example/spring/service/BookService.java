@@ -1,6 +1,8 @@
 package com.example.spring.service;
 
 import com.example.spring.entity.Book;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,10 +37,11 @@ public interface BookService {
     Optional<Book> getBookByIsbn(String isbn);
 
     /**
-     * 모든 활성 도서 조회
-     * @return 활성 도서 목록
+     * 모든 활성 도서 조회 (페이징)
+     * @param pageable 페이징 정보
+     * @return 도서 페이지
      */
-    List<Book> getAllActiveBooks();
+    Page<Book> getAllActiveBooks(Pageable pageable);
 
     /**
      * 도서 정보 수정
@@ -99,11 +102,12 @@ public interface BookService {
      * @param minPrice 최소 가격 (null 가능)
      * @param maxPrice 최대 가격 (null 가능)
      * @param available 재고 상태 (null 가능)
-     * @return 검색된 도서 목록
+     * @param pageable 페이징 정보
+     * @return 검색된 도서 페이지
      */
-    List<Book> searchBooksWithFilters(String title, String author, 
+    Page<Book> searchBooksWithFilters(String title, String author, 
                                      BigDecimal minPrice, BigDecimal maxPrice, 
-                                     Boolean available);
+                                     Boolean available, Pageable pageable);
 
     /**
      * 재고 상태별 도서 조회

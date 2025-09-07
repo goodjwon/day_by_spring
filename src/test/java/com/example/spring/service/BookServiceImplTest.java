@@ -13,6 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -217,8 +220,8 @@ class BookServiceImplTest {
         }
 
         @Test
-        @DisplayName("모든 활성 도서 조회")
-        void getAllActiveBooks_활성도서목록_반환() {
+        @DisplayName("모든 활성 도서 페이징 조회")
+        void getAllActiveBooks_페이징_활성도서페이지반환() {
             // Given
             List<Book> activeBooks = List.of(savedBook, 
                     Book.builder()
@@ -229,17 +232,48 @@ class BookServiceImplTest {
                             .price(new BigDecimal("52.99"))
                             .available(true)
                             .createdDate(LocalDateTime.now())
+                            .build(),
+                    Book.builder()
+                            .id(3L)
+                            .title("Spring in Action")
+                            .author("Craig Walls")
+                            .isbn("9781617294945")
+                            .price(new BigDecimal("39.99"))
+                            .available(true)
+                            .createdDate(LocalDateTime.now())
                             .build());
 
             given(bookRepository.findByDeletedDateIsNull()).willReturn(activeBooks);
+            Pageable pageable = PageRequest.of(0, 2);
 
             // When
-            List<Book> result = bookService.getAllActiveBooks();
+            Page<Book> result = bookService.getAllActiveBooks(pageable);
 
             // Then
-            assertThat(result).hasSize(2);
-            assertThat(result).extracting(Book::getTitle)
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getTotalElements()).isEqualTo(3);
+            assertThat(result.getTotalPages()).isEqualTo(2);
+            assertThat(result.getNumber()).isEqualTo(0);
+            assertThat(result.getContent()).extracting(Book::getTitle)
                     .containsExactly("Clean Code", "Effective Java");
+        }
+
+        @Test
+        @DisplayName("빈 페이지 조회 - 범위 초과")
+        void getAllActiveBooks_페이지범위초과_빈페이지반환() {
+            // Given
+            List<Book> activeBooks = List.of(savedBook);
+            given(bookRepository.findByDeletedDateIsNull()).willReturn(activeBooks);
+            Pageable pageable = PageRequest.of(1, 10); // 두 번째 페이지, 사이즈 10
+
+            // When
+            Page<Book> result = bookService.getAllActiveBooks(pageable);
+
+            // Then
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getNumber()).isEqualTo(1);
         }
     }
 
@@ -494,6 +528,65 @@ class BookServiceImplTest {
             assertThatThrownBy(() -> bookService.searchByPriceRange(minPrice, maxPrice))
                     .isInstanceOf(BookException.InvalidPriceRangeException.class)
                     .hasMessageContaining("최소 가격이 최대 가격보다 클 수 없습니다");
+        }
+
+        @Test
+        @DisplayName("복합 조건으로 도서 검색 - 페이징")
+        void searchBooksWithFilters_복합조건_페이징검색성공() {
+            // Given
+            List<Book> allActiveBooks = List.of(
+                    savedBook, // Clean Code, Robert C. Martin, 45.99
+                    Book.builder()
+                            .id(2L)
+                            .title("Effective Java")
+                            .author("Joshua Bloch")
+                            .isbn("9780134685991")
+                            .price(new BigDecimal("52.99"))
+                            .available(true)
+                            .createdDate(LocalDateTime.now())
+                            .build(),
+                    Book.builder()
+                            .id(3L)
+                            .title("Clean Architecture")
+                            .author("Robert C. Martin")
+                            .isbn("9780134494166")
+                            .price(new BigDecimal("48.99"))
+                            .available(true)
+                            .createdDate(LocalDateTime.now())
+                            .build()
+            );
+
+            given(bookRepository.findByDeletedDateIsNull()).willReturn(allActiveBooks);
+            Pageable pageable = PageRequest.of(0, 2);
+
+            // When - "Clean"이 포함된 제목, Martin 저자, 40-50 가격 범위
+            Page<Book> result = bookService.searchBooksWithFilters(
+                    "Clean", "Martin", new BigDecimal("40.00"), new BigDecimal("50.00"), true, pageable);
+
+            // Then
+            assertThat(result.getContent()).hasSize(2);  // Clean Code, Clean Architecture
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getContent()).extracting(Book::getTitle)
+                    .containsExactly("Clean Code", "Clean Architecture");
+        }
+
+        @Test
+        @DisplayName("복합 조건 검색 - 조건에 맞는 결과 없음")
+        void searchBooksWithFilters_조건불일치_빈페이지반환() {
+            // Given
+            List<Book> allActiveBooks = List.of(savedBook);
+            given(bookRepository.findByDeletedDateIsNull()).willReturn(allActiveBooks);
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When - 존재하지 않는 저자로 검색
+            Page<Book> result = bookService.searchBooksWithFilters(
+                    null, "NonExistentAuthor", null, null, null, pageable);
+
+            // Then
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isEqualTo(0);
+            assertThat(result.getTotalPages()).isEqualTo(0);
         }
     }
 

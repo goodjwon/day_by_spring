@@ -7,6 +7,9 @@ import com.example.spring.repository.BookRepository;
 import com.example.spring.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -62,9 +65,18 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> getAllActiveBooks() {
-        log.debug("모든 활성 도서 조회");
-        return bookRepository.findByDeletedDateIsNull();
+    public Page<Book> getAllActiveBooks(Pageable pageable) {
+        log.debug("모든 활성 도서 페이징 조회 - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        
+        List<Book> allActiveBooks = bookRepository.findByDeletedDateIsNull();
+        
+        // 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allActiveBooks.size());
+        
+        List<Book> pageContent = start >= allActiveBooks.size() ? List.of() : allActiveBooks.subList(start, end);
+        
+        return new PageImpl<>(pageContent, pageable, allActiveBooks.size());
     }
 
     @Override
@@ -175,7 +187,7 @@ public class BookServiceImpl implements BookService {
         log.debug("가격 범위로 도서 검색 - 최소: {}, 최대: {}", minPrice, maxPrice);
         
         if (minPrice == null && maxPrice == null) {
-            return getAllActiveBooks();
+            return bookRepository.findByDeletedDateIsNull();
         }
         
         if (minPrice == null) {
@@ -195,21 +207,30 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> searchBooksWithFilters(String title, String author, 
+    public Page<Book> searchBooksWithFilters(String title, String author, 
                                            BigDecimal minPrice, BigDecimal maxPrice, 
-                                           Boolean available) {
-        log.debug("복합 조건으로 도서 검색 - 제목: {}, 저자: {}, 최소가격: {}, 최대가격: {}, 재고: {}", 
-                title, author, minPrice, maxPrice, available);
+                                           Boolean available, Pageable pageable) {
+        log.debug("복합 조건으로 도서 검색 - 제목: {}, 저자: {}, 최소가격: {}, 최대가격: {}, 재고: {}, page: {}, size: {}", 
+                title, author, minPrice, maxPrice, available, pageable.getPageNumber(), pageable.getPageSize());
         
-        List<Book> books = getAllActiveBooks();
+        List<Book> allActiveBooks = bookRepository.findByDeletedDateIsNull();
         
-        return books.stream()
+        // 필터링 적용
+        List<Book> filteredBooks = allActiveBooks.stream()
                 .filter(book -> title == null || book.getTitle().toLowerCase().contains(title.toLowerCase()))
                 .filter(book -> author == null || book.getAuthor().toLowerCase().contains(author.toLowerCase()))
                 .filter(book -> minPrice == null || book.getPrice().compareTo(minPrice) >= 0)
                 .filter(book -> maxPrice == null || book.getPrice().compareTo(maxPrice) <= 0)
                 .filter(book -> available == null || book.getAvailable().equals(available))
                 .collect(Collectors.toList());
+        
+        // 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredBooks.size());
+        
+        List<Book> pageContent = start >= filteredBooks.size() ? List.of() : filteredBooks.subList(start, end);
+        
+        return new PageImpl<>(pageContent, pageable, filteredBooks.size());
     }
 
     @Override
