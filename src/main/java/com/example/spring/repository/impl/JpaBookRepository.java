@@ -2,64 +2,205 @@ package com.example.spring.repository.impl;
 
 import com.example.spring.entity.Book;
 import com.example.spring.repository.BookRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Spring Data JPA를 사용한 Repository 구현
- * - 간단한 인터페이스 선언만으로 CRUD 기능 자동 생성
- * - Query Methods를 통한 자동 쿼리 생성
+ * EntityManager를 사용한 BookRepository JPA 구현
+ * - Member Repository와 동일한 패턴 적용
+ * - JPQL을 사용한 쿼리 구현
  * - Soft Delete 패턴 지원
  */
 @Repository
-public interface JpaBookRepository extends JpaRepository<Book, Long>, BookRepository {
-    
-    // ISBN 관련 메서드 - JPA Query Methods
-    Optional<Book> findByIsbn(String isbn);
-    boolean existsByIsbn(String isbn);
+@Transactional
+public class JpaBookRepository implements BookRepository {
 
-    // 검색 메서드 (Soft Delete 고려)
-    List<Book> findByTitleContainingIgnoreCaseAndDeletedDateIsNull(String title);
-    List<Book> findByAuthorContainingIgnoreCaseAndDeletedDateIsNull(String author);
-    
-    @Query("SELECT b FROM Book b WHERE (UPPER(b.title) LIKE UPPER(CONCAT('%', :title, '%')) " +
-           "OR UPPER(b.author) LIKE UPPER(CONCAT('%', :author, '%'))) " +
-           "AND b.deletedDate IS NULL")
-    List<Book> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseAndDeletedDateIsNull(
-        @Param("title") String title, @Param("author") String author);
+    @PersistenceContext
+    private EntityManager em;
 
-    // 가격 범위 검색
-    List<Book> findByPriceBetweenAndDeletedDateIsNull(BigDecimal minPrice, BigDecimal maxPrice);
+    @Override
+    public Optional<Book> findById(Long id) {
+        Book book = em.find(Book.class, id);
+        return Optional.ofNullable(book);
+    }
 
-    // 삭제되지 않은 도서만 조회
-    List<Book> findByDeletedDateIsNull();
-    Page<Book> findByDeletedDateIsNull(Pageable pageable);
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findAll() {
+        return em.createQuery("SELECT b FROM Book b ORDER BY b.createdDate DESC", Book.class)
+                .getResultList();
+    }
 
-    // 재고 상태별 조회
-    List<Book> findByAvailableAndDeletedDateIsNull(Boolean available);
+    @Override
+    public Book save(Book book) {
+        if (book.getId() == null) {
+            em.persist(book);
+            return book;
+        } else {
+            return em.merge(book);
+        }
+    }
 
-    // 복합 검색 쿼리
-    @Query("SELECT b FROM Book b WHERE " +
-           "(:title IS NULL OR UPPER(b.title) LIKE UPPER(CONCAT('%', :title, '%'))) " +
-           "AND (:author IS NULL OR UPPER(b.author) LIKE UPPER(CONCAT('%', :author, '%'))) " +
-           "AND (:minPrice IS NULL OR b.price >= :minPrice) " +
-           "AND (:maxPrice IS NULL OR b.price <= :maxPrice) " +
-           "AND (:available IS NULL OR b.available = :available) " +
-           "AND b.deletedDate IS NULL " +
-           "ORDER BY b.createdDate DESC")
-    Page<Book> findBooksWithFilters(
-        @Param("title") String title,
-        @Param("author") String author,
-        @Param("minPrice") BigDecimal minPrice,
-        @Param("maxPrice") BigDecimal maxPrice,
-        @Param("available") Boolean available,
-        Pageable pageable);
+    @Override
+    public void deleteById(Long id) {
+        Book book = em.find(Book.class, id);
+        if (book != null) {
+            em.remove(book);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Book> findByIsbn(String isbn) {
+        TypedQuery<Book> query = em.createQuery(
+                "SELECT b FROM Book b WHERE b.isbn = :isbn", Book.class);
+        query.setParameter("isbn", isbn);
+        
+        List<Book> results = query.getResultList();
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByIsbn(String isbn) {
+        Long count = em.createQuery(
+                "SELECT COUNT(b) FROM Book b WHERE b.isbn = :isbn", Long.class)
+                .setParameter("isbn", isbn)
+                .getSingleResult();
+        return count > 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByTitleContaining(String title) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.title LIKE :title ORDER BY b.title", 
+                Book.class)
+                .setParameter("title", "%" + title + "%")
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByAuthorContaining(String author) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.author LIKE :author ORDER BY b.author", 
+                Book.class)
+                .setParameter("author", "%" + author + "%")
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByTitleContainingOrAuthorContaining(String title, String author) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.title LIKE :title OR b.author LIKE :author ORDER BY b.title", 
+                Book.class)
+                .setParameter("title", "%" + title + "%")
+                .setParameter("author", "%" + author + "%")
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByPriceBetween(BigDecimal minPrice, BigDecimal maxPrice) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.price BETWEEN :minPrice AND :maxPrice ORDER BY b.price", 
+                Book.class)
+                .setParameter("minPrice", minPrice)
+                .setParameter("maxPrice", maxPrice)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByAvailable(Boolean available) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.available = :available ORDER BY b.createdDate DESC", 
+                Book.class)
+                .setParameter("available", available)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByAvailableAndTitleContaining(Boolean available, String title) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.available = :available AND b.title LIKE :title ORDER BY b.title", 
+                Book.class)
+                .setParameter("available", available)
+                .setParameter("title", "%" + title + "%")
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByAvailableAndAuthorContaining(Boolean available, String author) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.available = :available AND b.author LIKE :author ORDER BY b.author", 
+                Book.class)
+                .setParameter("available", available)
+                .setParameter("author", "%" + author + "%")
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByAvailableAndPriceBetween(Boolean available, BigDecimal minPrice, BigDecimal maxPrice) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.available = :available AND b.price BETWEEN :minPrice AND :maxPrice ORDER BY b.price", 
+                Book.class)
+                .setParameter("available", available)
+                .setParameter("minPrice", minPrice)
+                .setParameter("maxPrice", maxPrice)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByCreatedDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.createdDate BETWEEN :startDate AND :endDate ORDER BY b.createdDate DESC", 
+                Book.class)
+                .setParameter("startDate", startDate)
+                .setParameter("endDate", endDate)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByDeletedDateIsNull() {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.deletedDate IS NULL ORDER BY b.createdDate DESC", 
+                Book.class)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByDeletedDateIsNotNull() {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.deletedDate IS NOT NULL ORDER BY b.deletedDate DESC", 
+                Book.class)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findByDeletedDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return em.createQuery(
+                "SELECT b FROM Book b WHERE b.deletedDate BETWEEN :startDate AND :endDate ORDER BY b.deletedDate DESC", 
+                Book.class)
+                .setParameter("startDate", startDate)
+                .setParameter("endDate", endDate)
+                .getResultList();
+    }
 }

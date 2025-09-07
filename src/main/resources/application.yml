@@ -17,11 +17,10 @@ spring:
         format_sql: true
     defer-datasource-initialization: true  # ⭐⭐⭐ 매우 중요!
 
-  # SQL 스크립트 실행
+  # SQL 스크립트 실행 비활성화 (테스트 환경을 위해)
   sql:
     init:
-      mode: always
-      data-locations: classpath:data.sql
+      mode: never
 
 # 로깅 설정
 logging:
