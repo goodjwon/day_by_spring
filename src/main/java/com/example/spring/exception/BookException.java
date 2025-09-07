@@ -31,8 +31,8 @@ public class BookException {
      * 삭제된 도서 접근 예외
      */
     public static class DeletedBookAccessException extends BusinessException {
-        public DeletedBookAccessException(Long id) {
-            super("DELETED_BOOK_ACCESS", "삭제된 도서에 접근할 수 없습니다. ID: " + id);
+        public DeletedBookAccessException(String message) {
+            super("DELETED_BOOK_ACCESS", message);
         }
     }
 
@@ -64,6 +64,33 @@ public class BookException {
     public static class InvalidBookPriceException extends BusinessException {
         public InvalidBookPriceException(String message) {
             super("INVALID_BOOK_PRICE", "잘못된 도서 가격입니다: " + message);
+        }
+    }
+
+    /**
+     * 잘못된 도서 데이터 예외
+     */
+    public static class InvalidBookDataException extends BusinessException {
+        public InvalidBookDataException(String message) {
+            super("INVALID_BOOK_DATA", message);
+        }
+    }
+
+    /**
+     * 잘못된 도서 상태 예외
+     */
+    public static class InvalidBookStateException extends BusinessException {
+        public InvalidBookStateException(String message) {
+            super("INVALID_BOOK_STATE", message);
+        }
+    }
+
+    /**
+     * 잘못된 가격 범위 예외
+     */
+    public static class InvalidPriceRangeException extends BusinessException {
+        public InvalidPriceRangeException(String message) {
+            super("INVALID_PRICE_RANGE", message);
         }
     }
 }
