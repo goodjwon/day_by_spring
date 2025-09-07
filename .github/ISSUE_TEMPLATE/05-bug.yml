@@ -1,0 +1,230 @@
+name: 🐛 Bug Report
+description: 버그 신고를 위한 이슈
+title: "[BUG] "
+labels: ["bug"]
+projects: ["day-by-spring"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 🐛 Bug Report Template
+        
+        발견된 버그를 신고하고 추적하기 위한 템플릿입니다.
+        가능한 한 상세하고 재현 가능한 정보를 제공해 주세요.
+
+  - type: input
+    id: bug-title
+    attributes:
+      label: "📋 버그 제목"
+      description: "버그를 간략하게 설명하는 제목을 입력하세요"
+      placeholder: "예: 회원 등록 시 이메일 중복 검증이 동작하지 않음"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "🚨 심각도"
+      description: "버그의 심각도를 선택하세요"
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: "🏢 도메인"
+      description: "버그가 발생한 도메인을 선택하세요"
+      options:
+        - member
+        - book
+        - order
+        - loan
+        - payment
+        - statistics
+        - system
+        - infrastructure
+        - ui
+        - api
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: "🔧 버그 유형"
+      description: "버그의 유형을 선택하세요"
+      options:
+        - functionality
+        - performance
+        - ui
+        - security
+        - data
+        - integration
+        - configuration
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "📝 버그 설명"
+      description: "발견된 버그에 대해 상세히 설명해주세요"
+      placeholder: |
+        ## 문제 상황
+        - 어떤 문제가 발생했는지 명확히 설명하세요
+        
+        ## 예상 동작
+        - 정상적으로 동작해야 하는 내용을 설명하세요
+        
+        ## 실제 동작
+        - 실제로 어떻게 동작하는지 설명하세요
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: "🔄 재현 단계"
+      description: "버그를 재현할 수 있는 단계별 방법을 작성해주세요"
+      placeholder: |
+        1. 애플리케이션을 실행한다
+        2. `/api/members` 엔드포인트에 POST 요청을 보낸다
+        3. 중복된 이메일로 두 번째 요청을 보낸다
+        4. 예외가 발생해야 하지만 정상적으로 처리된다
+        5. 데이터베이스를 확인하면 중복된 이메일이 저장되어 있다
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "✅ 예상 결과"
+      description: "정상적으로 동작했을 때 기대하는 결과를 설명하세요"
+      placeholder: |
+        - DuplicateEmailException이 발생해야 함
+        - HTTP 409 Conflict 응답을 반환해야 함
+        - 중복 이메일이 데이터베이스에 저장되지 않아야 함
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "❌ 실제 결과"
+      description: "실제로 발생한 결과를 설명하세요"
+      placeholder: |
+        - 예외가 발생하지 않음
+        - HTTP 200 OK 응답을 반환함
+        - 중복된 이메일이 데이터베이스에 저장됨
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "🌍 환경 정보"
+      description: "버그가 발생한 환경 정보를 제공해주세요"
+      placeholder: |
+        ## 운영체제
+        - macOS 14.0 / Windows 11 / Ubuntu 22.04
+        
+        ## Java 버전
+        - Java 21
+        
+        ## Spring Boot 버전
+        - 3.5.3
+        
+        ## 데이터베이스
+        - H2 (개발) / MySQL 8.0 (운영)
+        
+        ## 브라우저 (해당하는 경우)
+        - Chrome 120.0, Safari 17.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: "📄 에러 로그"
+      description: "관련된 에러 로그나 스택 트레이스를 첨부해주세요"
+      placeholder: |
+        ```
+        2024-01-15 10:30:25.123 ERROR 12345 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[/].[dispatcherServlet]
+        
+        java.lang.NullPointerException: Cannot invoke "String.length()" because "email" is null
+            at com.example.spring.service.impl.MemberServiceImpl.validateEmail(MemberServiceImpl.java:45)
+            at com.example.spring.service.impl.MemberServiceImpl.createMember(MemberServiceImpl.java:32)
+            ...
+        ```
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "📸 스크린샷"
+      description: "UI 관련 버그인 경우 스크린샷을 첨부해주세요 (이미지를 드래그 앤 드롭하거나 붙여넣기)"
+      placeholder: |
+        스크린샷을 여기에 첨부하세요.
+        
+        ## Before (문제 상황)
+        [스크린샷 첨부]
+        
+        ## Expected (예상 결과)
+        [스크린샷 첨부]
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "📋 추가 정보"
+      description: "버그 해결에 도움이 될 수 있는 추가 정보를 제공해주세요"
+      placeholder: |
+        ## 관련 코드
+        - 문제가 되는 코드의 위치나 파일명
+        
+        ## 최근 변경사항
+        - 이 버그와 관련될 수 있는 최근 코드 변경사항
+        
+        ## 임시 해결방법
+        - 현재 사용하고 있는 임시 해결방법이 있다면 설명
+        
+        ## 영향 범위
+        - 이 버그가 다른 기능에 미치는 영향
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: "📊 발생 빈도"
+      description: "이 버그가 얼마나 자주 발생하는지 선택하세요"
+      options:
+        - always
+        - often
+        - sometimes
+        - rarely
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "✅ 체크리스트"
+      description: "버그 신고 전 확인사항"
+      options:
+        - label: "동일한 버그가 이미 신고되지 않았는지 확인했습니다"
+          required: true
+        - label: "재현 단계를 통해 버그를 재현할 수 있습니다"
+          required: true
+        - label: "가능한 한 상세한 정보를 제공했습니다"
+          required: true
+        - label: "민감한 정보(비밀번호, API 키 등)는 포함하지 않았습니다"
+          required: true
+
+  - type: input
+    id: milestone
+    attributes:
+      label: "🎯 마일스톤"
+      description: "이 버그 수정이 포함될 마일스톤 (선택사항)"
+      placeholder: "예: Phase 1: 회원 & 도서 관리"

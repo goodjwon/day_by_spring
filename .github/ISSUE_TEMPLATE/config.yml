@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 토론 및 질문
+    url: https://github.com/goodjwon/day_by_spring/discussions
+    about: 일반적인 질문이나 토론은 Discussion을 이용해 주세요
+  - name: 📚 위키 문서
+    url: https://github.com/goodjwon/day_by_spring/wiki
+    about: 프로젝트 문서와 가이드라인을 확인하세요
+  - name: 🔧 개발 환경 설정
+    url: https://github.com/goodjwon/day_by_spring/wiki/Development-Setup
+    about: 개발 환경 설정에 대한 도움이 필요하면 위키를 확인하세요

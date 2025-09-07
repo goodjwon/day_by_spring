@@ -1,0 +1,97 @@
+name: 🏗️ Epic
+description: 큰 기능 단위의 개발 작업을 위한 Epic 이슈
+title: "[EPIC] "
+labels: ["epic"]
+projects: ["day-by-spring"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 📊 Epic Issue Template
+        
+        큰 기능 단위의 개발 작업을 정의하고 관리하기 위한 템플릿입니다.
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: "📊 상태"
+      description: "Epic의 현재 상태"
+      options:
+        - "🔄 진행중"
+        - "⏳ 대기중"
+        - "✅ 완료"
+        - "🚫 중단"
+    validations:
+      required: true
+
+  - type: input
+    id: period
+    attributes:
+      label: "📅 기간"
+      description: "Epic 진행 기간"
+      placeholder: "예: 2025-07-15 ~ 2025-08-10"
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "🔥 우선순위"
+      description: "Epic의 우선순위를 선택하세요"
+      options:
+        - "🔥 Critical"
+        - "🟡 High"
+        - "🟢 Medium"
+        - "🔵 Low"
+    validations:
+      required: true
+
+  - type: textarea
+    id: included-features
+    attributes:
+      label: "🔧 포함 기능"
+      description: "Epic에 포함될 주요 기능들을 나열하세요"
+      placeholder: |
+        - ✅ 도서 등록 API
+        - ✅ 도서 단건 조회 API
+        - ✅ 도서 목록 조회 API
+        - ⏳ 도서 검색 기능 (제목, 저자, ISBN)
+        - ⏳ 도서 정보 수정 API
+        - ⏳ 도서 삭제 API (soft delete)
+        - ⏳ 도서 재고 관리
+    validations:
+      required: true
+
+  - type: textarea
+    id: learning-objectives
+    attributes:
+      label: "🎓 학습 목표"
+      description: "이 Epic을 통해 달성하고자 하는 학습 목표"
+      placeholder: |
+        - JPA Entity 설계 및 관계 매핑
+        - Query Method 활용
+        - 검색 기능 구현 (Like, Contains)
+        - Soft Delete 패턴 구현
+
+  - type: textarea
+    id: related-stories
+    attributes:
+      label: "📋 관련 Story Issues"
+      description: "이 Epic에 포함될 Story들을 나열하세요"
+      placeholder: |
+        - [ ] 도서 기본 CRUD 구현
+        - [ ] 도서 검색 및 필터링
+        - [ ] 도서 재고 관리
+        - [ ] 도서 카테고리 관리
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: "✅ Definition of Done"
+      description: "Epic이 완료되었다고 판단할 수 있는 조건들"
+      placeholder: |
+        - [ ] 모든 도서 관리 API 구현
+        - [ ] 도서 검색 기능 완료
+        - [ ] 재고 관리 로직 구현
+        - [ ] 테스트 케이스 작성
+        - [ ] API 문서화
+    validations:
+      required: true
