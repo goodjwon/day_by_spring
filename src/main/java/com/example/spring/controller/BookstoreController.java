@@ -1,9 +1,7 @@
 package com.example.spring.controller;
 
 import com.example.spring.dto.CreateOrderRequest;
-import com.example.spring.entity.Book;
 import com.example.spring.entity.Order;
-import com.example.spring.repository.BookRepository;
 import com.example.spring.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST API Controller
+ * 주문 관리 REST API Controller
+ * 도서 관리는 BookController에서 담당
  */
 @RestController
 @RequestMapping("/api")
@@ -22,20 +21,6 @@ import java.util.List;
 public class BookstoreController {
 
     private final OrderService orderService;
-    private final BookRepository bookRepository;
-
-    @GetMapping("/books")
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> books = bookRepository.findAll();
-        return ResponseEntity.ok(books);
-    }
-
-    @GetMapping("/books/{id}")
-    public ResponseEntity<Book> getBook(@PathVariable Long id) {
-        return bookRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @PostMapping("/orders")
     public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
