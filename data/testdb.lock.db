@@ -1,0 +1,6 @@
+#FileLock
+#Mon Sep 08 21:45:57 KST 2025
+hostName=localhost
+id=199295c8d1844fa1cefa42bcad04f3b03283ad42122
+method=file
+server=localhost\:9093
