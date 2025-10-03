@@ -2,6 +2,7 @@ package com.example.spring.controller;
 
 import com.example.spring.dto.request.CreateBookRequest;
 import com.example.spring.dto.request.UpdateBookRequest;
+import com.example.spring.dto.response.BookResponse;
 import com.example.spring.entity.Book;
 import com.example.spring.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,7 +88,7 @@ class BookControllerTest {
         @DisplayName("도서 생성 성공")
         void createBook_유효한요청_생성성공() throws Exception {
             // Given
-            given(bookService.createBook(any(Book.class))).willReturn(testBook);
+            given(bookService.createBook(any(CreateBookRequest.class))).willReturn(BookResponse.from(testBook));
 
             // When & Then
             mockMvc.perform(post("/api/books")
@@ -102,7 +103,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("$.price").value(45000))
                     .andExpect(jsonPath("$.available").value(true));
 
-            verify(bookService).createBook(any(Book.class));
+            verify(bookService).createBook(any(CreateBookRequest.class));
         }
 
         @Test
@@ -238,7 +239,7 @@ class BookControllerTest {
                     .updatedDate(LocalDateTime.now())
                     .build();
 
-            given(bookService.updateBook(eq(1L), any(Book.class))).willReturn(updatedBook);
+            given(bookService.updateBook(eq(1L), any(UpdateBookRequest.class))).willReturn(BookResponse.from(updatedBook));
 
             // When & Then
             mockMvc.perform(put("/api/books/1")
@@ -249,7 +250,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("$.title").value("Clean Code - Updated"))
                     .andExpect(jsonPath("$.price").value(47000));
 
-            verify(bookService).updateBook(eq(1L), any(Book.class));
+            verify(bookService).updateBook(eq(1L), any(UpdateBookRequest.class));
         }
     }
 
