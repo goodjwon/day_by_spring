@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -39,18 +38,7 @@ public class BookController {
     public ResponseEntity<BookResponse> createBook(@Valid @RequestBody CreateBookRequest request) {
         log.info("도서 등록 요청 - ISBN: {}, 제목: {}", request.getIsbn(), request.getTitle());
 
-        Book book = Book.builder()
-                .title(request.getTitle())
-                .author(request.getAuthor())
-                .isbn(request.getIsbn())
-                .price(request.getPrice())
-                .available(request.getAvailable())
-                .createdDate(LocalDateTime.now())
-                .build();
-
-        Book savedBook = bookService.createBook(book);
-        BookResponse response = BookResponse.from(savedBook);
-
+        BookResponse response = bookService.createBook(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -99,17 +87,7 @@ public class BookController {
 
         log.info("도서 수정 요청 - ID: {}", id);
 
-        Book updateBook = Book.builder()
-                .title(request.getTitle())
-                .author(request.getAuthor())
-                .isbn(request.getIsbn())
-                .price(request.getPrice())
-                .available(request.getAvailable())
-                .build();
-
-        Book savedBook = bookService.updateBook(id, updateBook);
-        BookResponse response = BookResponse.from(savedBook);
-
+        BookResponse response = bookService.updateBook(id, request);
         return ResponseEntity.ok(response);
     }
 

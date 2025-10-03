@@ -1,5 +1,8 @@
 package com.example.spring.service.impl;
 
+import com.example.spring.dto.request.CreateBookRequest;
+import com.example.spring.dto.request.UpdateBookRequest;
+import com.example.spring.dto.response.BookResponse;
 import com.example.spring.entity.Book;
 import com.example.spring.exception.BookException;
 import com.example.spring.exception.EntityNotFoundException;
@@ -34,20 +37,27 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public Book createBook(Book book) {
-        log.info("도서 생성 요청 - ISBN: {}, 제목: {}", book.getIsbn(), book.getTitle());
-        
-        validateBook(book);
-        
-        if (bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + book.getIsbn());
+    public BookResponse createBook(CreateBookRequest request) {
+        log.info("도서 생성 요청 - ISBN: {}, 제목: {}", request.getIsbn(), request.getTitle());
+
+        if (bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
         }
-        
-        book.setCreatedDate(LocalDateTime.now());
+
+        Book book = Book.builder()
+                .title(request.getTitle())
+                .author(request.getAuthor())
+                .isbn(request.getIsbn())
+                .price(request.getPrice())
+                .available(request.getAvailable())
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        validateBook(book);
         Book savedBook = bookRepository.save(book);
-        
+
         log.info("도서 생성 완료 - ID: {}, ISBN: {}", savedBook.getId(), savedBook.getIsbn());
-        return savedBook;
+        return BookResponse.from(savedBook);
     }
 
     @Override
@@ -81,36 +91,35 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public Book updateBook(Long id, Book updatedBook) {
+    public BookResponse updateBook(Long id, UpdateBookRequest request) {
         log.info("도서 정보 수정 요청 - ID: {}", id);
-        
+
         Book existingBook = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("도서를 찾을 수 없습니다: " + id));
-        
+
         if (existingBook.getDeletedDate() != null) {
             throw new BookException.DeletedBookAccessException("삭제된 도서는 수정할 수 없습니다: " + id);
         }
-        
-        validateBook(updatedBook);
-        
+
         // ISBN 중복 검사 (자기 자신 제외)
-        if (!existingBook.getIsbn().equals(updatedBook.getIsbn()) && 
-            bookRepository.existsByIsbn(updatedBook.getIsbn())) {
-            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + updatedBook.getIsbn());
+        if (!existingBook.getIsbn().equals(request.getIsbn()) &&
+            bookRepository.existsByIsbn(request.getIsbn())) {
+            throw new BookException.DuplicateIsbnException("이미 존재하는 ISBN입니다: " + request.getIsbn());
         }
-        
+
         // 필드 업데이트
-        existingBook.setTitle(updatedBook.getTitle());
-        existingBook.setAuthor(updatedBook.getAuthor());
-        existingBook.setIsbn(updatedBook.getIsbn());
-        existingBook.setPrice(updatedBook.getPrice());
-        existingBook.setAvailable(updatedBook.getAvailable());
+        existingBook.setTitle(request.getTitle());
+        existingBook.setAuthor(request.getAuthor());
+        existingBook.setIsbn(request.getIsbn());
+        existingBook.setPrice(request.getPrice());
+        existingBook.setAvailable(request.getAvailable());
         existingBook.setUpdatedDate(LocalDateTime.now());
-        
+
+        validateBook(existingBook);
         Book savedBook = bookRepository.save(existingBook);
-        
+
         log.info("도서 정보 수정 완료 - ID: {}", savedBook.getId());
-        return savedBook;
+        return BookResponse.from(savedBook);
     }
 
     @Override

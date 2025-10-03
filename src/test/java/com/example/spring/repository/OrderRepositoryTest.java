@@ -24,6 +24,18 @@ public class OrderRepositoryTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    private Book createAndSaveBook(String title, String author, BigDecimal price) {
+        Book book = Book.builder()
+                .title(title)
+                .author(author)
+                .price(price)
+                .isbn("ISBN" + System.currentTimeMillis())
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build();
+        return entityManager.persistAndFlush(book);
+    }
+
     @Test
     public void save_신규주문_저장성공() {
         // Given
@@ -43,8 +55,8 @@ public class OrderRepositoryTest {
 
     @Test
     public void save_주문아이템포함_저장성공() {
-        // Given - 데이터베이스에 이미 존재하는 도서 사용 (ID: 1)
-        Book book = entityManager.find(Book.class, 1L);
+        // Given - 테스트에서 직접 도서 생성
+        Book book = createAndSaveBook("Clean Code", "Robert C. Martin", new BigDecimal("38000"));
 
         Order order = Order.builder()
                 .totalAmount(new BigDecimal("10000"))
