@@ -1,3 +1,4 @@
+
 # Spring Library System API 가이드
 
 ## 📚 개요
@@ -288,6 +289,191 @@ curl -X GET "http://localhost:8080/api/members/1/loan-limit"
 curl -X GET "http://localhost:8080/api/members/email/validate?email=test@example.com"
 ```
 
+### 8단계: 주문 관리 (Orders API)
+
+#### 8.1 주문 생성
+새로운 주문을 생성합니다.
+
+```bash
+curl -X POST "http://localhost:8080/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bookIds": [1, 2],
+    "customerEmail": "hong@example.com"
+  }'
+```
+
+**응답 예제:**
+```json
+{
+  "id": 1,
+  "totalAmount": 97000,
+  "orderDate": "2025-10-03T22:00:00",
+  "status": "PENDING",
+  "items": [
+    {
+      "id": 1,
+      "bookId": 1,
+      "bookTitle": "Clean Code",
+      "bookAuthor": "Robert C. Martin",
+      "quantity": 1,
+      "price": 45000
+    },
+    {
+      "id": 2,
+      "bookId": 2,
+      "bookTitle": "Spring in Action",
+      "bookAuthor": "Craig Walls",
+      "quantity": 1,
+      "price": 52000
+    }
+  ]
+}
+```
+
+#### 8.2 주문 단건 조회
+특정 주문의 상세 정보를 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders/1"
+```
+
+#### 8.3 주문 목록 조회 (페이징)
+등록된 주문들을 페이징으로 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders?page=0&size=10&sort=orderDate&direction=desc"
+```
+
+#### 8.4 주문 상태 변경
+주문의 상태를 변경합니다.
+
+```bash
+# PENDING -> CONFIRMED
+curl -X PATCH "http://localhost:8080/api/orders/1/status?status=CONFIRMED"
+
+# CONFIRMED -> SHIPPED
+curl -X PATCH "http://localhost:8080/api/orders/1/status?status=SHIPPED"
+
+# SHIPPED -> DELIVERED
+curl -X PATCH "http://localhost:8080/api/orders/1/status?status=DELIVERED"
+```
+
+**주문 상태:**
+- `PENDING`: 주문 대기
+- `CONFIRMED`: 주문 확인
+- `SHIPPED`: 배송 중
+- `DELIVERED`: 배송 완료
+- `CANCELLED`: 주문 취소
+
+#### 8.5 주문 수정
+PENDING 상태의 주문만 수정할 수 있습니다.
+
+```bash
+curl -X PUT "http://localhost:8080/api/orders/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bookIds": [1, 2, 3],
+    "customerEmail": "hong@example.com"
+  }'
+```
+
+#### 8.6 주문 취소
+주문을 취소합니다. (배송 완료된 주문은 취소 불가)
+
+```bash
+curl -X POST "http://localhost:8080/api/orders/1/cancel"
+```
+
+#### 8.7 상태별 주문 조회
+특정 상태의 주문들을 조회합니다.
+
+```bash
+# PENDING 상태 주문 조회
+curl -X GET "http://localhost:8080/api/orders/status/PENDING?page=0&size=10"
+
+# CONFIRMED 상태 주문 조회
+curl -X GET "http://localhost:8080/api/orders/status/CONFIRMED?page=0&size=10"
+```
+
+#### 8.8 기간별 주문 조회
+특정 기간의 주문들을 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders/period?startDate=2025-01-01T00:00:00&endDate=2025-12-31T23:59:59&page=0&size=10"
+```
+
+#### 8.9 주문 통계 조회
+전체 주문에 대한 통계를 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders/statistics"
+```
+
+**응답 예제:**
+```json
+{
+  "totalOrders": 100,
+  "pendingOrders": 20,
+  "confirmedOrders": 30,
+  "shippedOrders": 25,
+  "deliveredOrders": 20,
+  "cancelledOrders": 5,
+  "totalRevenue": 5000000,
+  "averageOrderAmount": 50000
+}
+```
+
+#### 8.10 일별 주문 통계
+특정 기간의 일별 주문 통계를 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders/statistics/daily?startDate=2025-10-01T00:00:00&endDate=2025-10-31T23:59:59"
+```
+
+**응답 예제:**
+```json
+[
+  {
+    "date": "2025-10-01T00:00:00",
+    "orderCount": 15,
+    "totalAmount": 750000
+  },
+  {
+    "date": "2025-10-02T00:00:00",
+    "orderCount": 12,
+    "totalAmount": 600000
+  }
+]
+```
+
+#### 8.11 상위 판매 도서 조회
+가장 많이 판매된 도서 목록을 조회합니다.
+
+```bash
+curl -X GET "http://localhost:8080/api/orders/statistics/top-books?limit=10"
+```
+
+**응답 예제:**
+```json
+[
+  {
+    "bookId": 1,
+    "bookTitle": "Clean Code",
+    "bookAuthor": "Robert C. Martin",
+    "totalQuantity": 50,
+    "totalRevenue": 2250000
+  },
+  {
+    "bookId": 2,
+    "bookTitle": "Spring in Action",
+    "bookAuthor": "Craig Walls",
+    "totalQuantity": 45,
+    "totalRevenue": 2340000
+  }
+]
+```
+
 ## 📊 완전한 테스트 시나리오
 
 다음은 모든 기능을 순서대로 테스트하는 완전한 스크립트입니다:
@@ -318,6 +504,23 @@ curl -X GET "$BASE_URL/api/books/statistics"
 
 echo -e "\n=== 6. 회원 목록 조회 ==="
 curl -X GET "$BASE_URL/api/members?page=0&size=10"
+
+echo -e "\n=== 7. 주문 생성 ==="
+curl -X POST "$BASE_URL/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{"bookIds": [1, 2], "customerEmail": "hong@example.com"}'
+
+echo -e "\n=== 8. 주문 목록 조회 ==="
+curl -X GET "$BASE_URL/api/orders?page=0&size=10"
+
+echo -e "\n=== 9. 주문 상태 변경 ==="
+curl -X PATCH "$BASE_URL/api/orders/1/status?status=CONFIRMED"
+
+echo -e "\n=== 10. 주문 통계 조회 ==="
+curl -X GET "$BASE_URL/api/orders/statistics"
+
+echo -e "\n=== 11. 상위 판매 도서 조회 ==="
+curl -X GET "$BASE_URL/api/orders/statistics/top-books?limit=5"
 ```
 
 ## 🛠️ 개발자를 위한 정보

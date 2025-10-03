@@ -48,14 +48,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #### Data Layer
 - **Repositories**: Interface-based with JPA implementations
   - Custom interfaces: `BookRepository`, `OrderRepository`, etc.
-  - JPA implementations: `impl/JpaBookRepository`, etc.
+  - JPA implementations: `impl/JpaBookRepository`, `impl/JpaOrderRepository`, etc.
 - **Database**: H2 (dev/test), MySQL (prod)
 
 #### Service Layer
 - **Services**: Business logic with Spring transaction management
-  - `OrderService`/`OrderServiceImpl` - Order processing
+  - `BookService`/`BookServiceImpl` - Book management
+  - `OrderService`/`OrderServiceImpl` - Order processing with status management
+  - `MemberService`/`MemberServiceImpl` - Member management
   - `EmailService`, `LoggingService` - Cross-cutting concerns
 - **Events**: Spring event system for decoupled components
+
+#### Controller Layer (REST API)
+- **BookController**: Complete CRUD operations with pagination, search, and statistics
+- **OrderController**: Order management with status workflow, statistics, and reporting
+  - Order lifecycle: PENDING → CONFIRMED → SHIPPED → DELIVERED
+  - Order cancellation (except DELIVERED status)
+  - Advanced queries: status-based, period-based, top-selling books
+- **MemberController**: Member registration, profile management, and validation
 
 ### Testing Strategy
 

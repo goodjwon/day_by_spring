@@ -1,4 +1,4 @@
-package com.example.spring;
+package com.example.spring.service;
 
 import com.example.spring.entity.Book;
 import com.example.spring.entity.Order;
@@ -27,10 +27,10 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
 
-    @Mock private BookRepository bookRepository;    // OrderService가 작동하기 위해 필수
-    @Mock private OrderRepository orderRepository;  // OrderService가 작동하기 위해 필수
-    @Mock private EmailService emailService;        // OrderService가 작동하기 위해 필수
-    @Mock private LoggingService loggingService;    // OrderService가 작동하기 위해 필수
+    @Mock private BookRepository bookRepository;
+    @Mock private com.example.spring.repository.impl.JpaOrderRepository orderRepository;
+    @Mock private EmailService emailService;
+    @Mock private LoggingService loggingService;
 
     @InjectMocks private OrderServiceImpl orderService;
 
@@ -218,17 +218,18 @@ class OrderServiceImplTest {
                 createTestOrder(1L, new BigDecimal("10000")),
                 createTestOrder(2L, new BigDecimal("20000"))
         );
-        when(orderRepository.findAll()).thenReturn(expectedOrders);
+        org.springframework.data.domain.Page<Order> page = new org.springframework.data.domain.PageImpl<>(expectedOrders);
+        when(orderRepository.findAll(any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
 
         // When
-        List<Order> result = orderService.findAllOrders();
+        org.springframework.data.domain.Page<Order> result = orderService.findAllOrders(org.springframework.data.domain.PageRequest.of(0, 10));
 
         // Then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getTotalAmount()).isEqualTo(new BigDecimal("10000"));
-        assertThat(result.get(1).getTotalAmount()).isEqualTo(new BigDecimal("20000"));
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getTotalAmount()).isEqualTo(new BigDecimal("10000"));
+        assertThat(result.getContent().get(1).getTotalAmount()).isEqualTo(new BigDecimal("20000"));
 
-        verify(orderRepository).findAll();
+        verify(orderRepository).findAll(any(org.springframework.data.domain.Pageable.class));
     }
 
     // 테스트 헬퍼 메서드들

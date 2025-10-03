@@ -1,17 +1,9 @@
 package com.example.spring.repository;
 
-import com.example.spring.entity.Order;
-
-import java.util.List;
-import java.util.Optional;
-
+/**
+ * 주문 레포지토리 마커 인터페이스
+ * 실제 메서드는 JpaOrderRepository (extends JpaRepository)에서 제공
+ */
 public interface OrderRepository {
-    Order save(Order order);
-    Optional<Order> findById(Long id);
-    List<Order> findAll();
-
-    // 편의 메서드 - Optional을 처리하지 않고 직접 Order 반환
-    default Order findOrderById(Long id) {
-        return findById(id).orElse(null);
-    }
+    // JpaRepository가 모든 CRUD 메서드를 제공하므로 여기서는 선언하지 않음
 }

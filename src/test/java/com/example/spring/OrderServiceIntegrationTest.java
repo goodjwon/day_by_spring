@@ -34,7 +34,7 @@ class OrderServiceIntegrationTest {
 
     @Autowired private OrderService orderService;
     @Autowired private BookRepository bookRepository;
-    @Autowired private OrderRepository orderRepository;
+    @Autowired private com.example.spring.repository.impl.JpaOrderRepository orderRepository;
 
     @MockitoBean private EmailService emailService; // 새로운 @MockitoBean 사용
 
@@ -250,7 +250,8 @@ class OrderServiceIntegrationTest {
         entityManager.flush();
 
         // When
-        List<Order> allOrders = orderService.findAllOrders();
+        org.springframework.data.domain.Page<Order> page = orderService.findAllOrders(org.springframework.data.domain.PageRequest.of(0, 10));
+        List<Order> allOrders = page.getContent();
 
         // Then
         assertThat(allOrders).hasSize(2);

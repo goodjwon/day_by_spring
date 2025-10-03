@@ -22,7 +22,7 @@ public class OrderRepositoryTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private com.example.spring.repository.impl.JpaOrderRepository orderRepository;
 
     private Book createAndSaveBook(String title, String author, BigDecimal price) {
         Book book = Book.builder()
@@ -148,7 +148,7 @@ public class OrderRepositoryTest {
         entityManager.flush();
 
         // When
-        Order foundOrder = orderRepository.findOrderById(savedOrder.getId());
+        Order foundOrder = orderRepository.findById(savedOrder.getId()).orElse(null);
 
         // Then
         assertThat(foundOrder).isNotNull();
@@ -158,7 +158,7 @@ public class OrderRepositoryTest {
     @Test
     public void findOrderById_존재하지않는주문_null반환() {
         // When
-        Order foundOrder = orderRepository.findOrderById(999L);
+        Order foundOrder = orderRepository.findById(999L).orElse(null);
 
         // Then
         assertThat(foundOrder).isNull();
