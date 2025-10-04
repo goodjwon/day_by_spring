@@ -2,6 +2,7 @@ package com.example.spring.repository.impl;
 
 import com.example.spring.entity.Order;
 import com.example.spring.entity.OrderStatus;
+import com.example.spring.repository.OrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
-public interface JpaOrderRepository extends JpaRepository<Order, Long> {
+public interface JpaOrderRepository extends JpaRepository<Order, Long>, OrderRepository {
 
     // 상태별 조회
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);

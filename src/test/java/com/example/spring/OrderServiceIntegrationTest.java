@@ -4,7 +4,6 @@ import com.example.spring.entity.Book;
 import com.example.spring.entity.Order;
 import com.example.spring.entity.OrderItem;
 import com.example.spring.repository.BookRepository;
-import com.example.spring.repository.OrderRepository;
 import com.example.spring.service.EmailService;
 import com.example.spring.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,10 +52,33 @@ class OrderServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // data.sql에서 삽입된 기존 도서 데이터 활용
-        testBook1 = bookRepository.findById(1L).orElseThrow(); // Clean Code
-        testBook2 = bookRepository.findById(2L).orElseThrow(); // Spring in Action
-        testBook3 = bookRepository.findById(3L).orElseThrow(); // Effective Java
+        // 테스트 도서 데이터 생성
+        testBook1 = bookRepository.save(Book.builder()
+                .title("Clean Code")
+                .author("Robert C. Martin")
+                .isbn("9780132350884")
+                .price(new BigDecimal("45000"))
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build());
+
+        testBook2 = bookRepository.save(Book.builder()
+                .title("Spring in Action")
+                .author("Craig Walls")
+                .isbn("9781617294945")
+                .price(new BigDecimal("52000"))
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build());
+
+        testBook3 = bookRepository.save(Book.builder()
+                .title("Effective Java")
+                .author("Joshua Bloch")
+                .isbn("9780134685991")
+                .price(new BigDecimal("48000"))
+                .available(true)
+                .createdDate(LocalDateTime.now())
+                .build());
     }
 
     @Test
