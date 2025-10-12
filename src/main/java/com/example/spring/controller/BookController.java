@@ -49,10 +49,8 @@ public class BookController {
     public ResponseEntity<BookResponse> getBook(@PathVariable Long id) {
         log.debug("도서 조회 요청 - ID: {}", id);
 
-        Book book = bookService.getBookById(id)
+        BookResponse response = bookService.getBookById(id)
                 .orElseThrow(() -> new RuntimeException("도서를 찾을 수 없습니다: " + id));
-
-        BookResponse response = BookResponse.from(book);
         return ResponseEntity.ok(response);
     }
 
@@ -110,10 +108,8 @@ public class BookController {
         log.info("도서 복원 요청 - ID: {}", id);
 
         bookService.restoreBook(id);
-        Book book = bookService.getBookById(id)
+        BookResponse response = bookService.getBookById(id)
                 .orElseThrow(() -> new RuntimeException("도서를 찾을 수 없습니다: " + id));
-
-        BookResponse response = BookResponse.from(book);
         return ResponseEntity.ok(response);
     }
 
@@ -222,6 +218,39 @@ public class BookController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
 
         Page<Book> books = bookService.searchBooksWithFilters(
+                title,
+                author,
+                minPrice,
+                maxPrice,
+                available,
+                pageable
+        );
+
+        Page<BookResponse> response = books.map(BookResponse::from);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 복합 조건으로 도서 검색 (JPQL Query 버전)
+     */
+    @GetMapping("/search/query")
+    public ResponseEntity<Page<BookResponse>> searchBooksWithQueryFilters(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sort,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        log.debug("복합 조건으로 도서 검색 (Query 버전) - title: {}, author: {}", title, author);
+
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+
+        Page<Book> books = bookService.searchBooksWithQueryFilters(
                 title,
                 author,
                 minPrice,

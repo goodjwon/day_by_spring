@@ -41,15 +41,24 @@ public interface BookRepository {
     List<Book> findByDeletedDateIsNotNull();
     List<Book> findByDeletedDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
+    // 복합 조건 검색 (JPQL 버전 - 페이징)
+    List<Book> searchBooksWithQueryFilters(String title, String author,
+                                          BigDecimal minPrice, BigDecimal maxPrice,
+                                          Boolean available, int offset, int limit);
+
+    long countBooksWithQueryFilters(String title, String author,
+                                   BigDecimal minPrice, BigDecimal maxPrice,
+                                   Boolean available);
+
     // 편의 메서드
     default Book findBookById(Long id) {
         return findById(id).orElse(null);
     }
-    
+
     default List<Book> findActiveBooks() {
         return findByDeletedDateIsNull();
     }
-    
+
     default List<Book> searchBooks(String keyword) {
         return findByTitleContainingOrAuthorContaining(keyword, keyword);
     }

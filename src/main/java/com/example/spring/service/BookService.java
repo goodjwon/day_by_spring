@@ -30,7 +30,7 @@ public interface BookService {
      * @param id 도서 ID
      * @return 도서 정보
      */
-    Optional<Book> getBookById(Long id);
+    Optional<BookResponse> getBookById(Long id);
 
     /**
      * ISBN으로 도서 조회
@@ -99,7 +99,7 @@ public interface BookService {
     List<Book> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
 
     /**
-     * 복합 조건으로 도서 검색
+     * 복합 조건으로 도서 검색 (Stream 버전)
      * @param title 제목 (null 가능)
      * @param author 저자 (null 가능)
      * @param minPrice 최소 가격 (null 가능)
@@ -108,9 +108,23 @@ public interface BookService {
      * @param pageable 페이징 정보
      * @return 검색된 도서 페이지
      */
-    Page<Book> searchBooksWithFilters(String title, String author, 
-                                     BigDecimal minPrice, BigDecimal maxPrice, 
+    Page<Book> searchBooksWithFilters(String title, String author,
+                                     BigDecimal minPrice, BigDecimal maxPrice,
                                      Boolean available, Pageable pageable);
+
+    /**
+     * 복합 조건으로 도서 검색 (JPQL Query 버전)
+     * @param title 제목 (null 가능)
+     * @param author 저자 (null 가능)
+     * @param minPrice 최소 가격 (null 가능)
+     * @param maxPrice 최대 가격 (null 가능)
+     * @param available 재고 상태 (null 가능)
+     * @param pageable 페이징 정보
+     * @return 검색된 도서 페이지
+     */
+    Page<Book> searchBooksWithQueryFilters(String title, String author,
+                                          BigDecimal minPrice, BigDecimal maxPrice,
+                                          Boolean available, Pageable pageable);
 
     /**
      * 재고 상태별 도서 조회
