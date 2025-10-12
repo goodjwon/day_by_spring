@@ -197,10 +197,103 @@ public class JpaBookRepository implements BookRepository {
     @Transactional(readOnly = true)
     public List<Book> findByDeletedDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return em.createQuery(
-                "SELECT b FROM Book b WHERE b.deletedDate BETWEEN :startDate AND :endDate ORDER BY b.deletedDate DESC", 
+                "SELECT b FROM Book b WHERE b.deletedDate BETWEEN :startDate AND :endDate ORDER BY b.deletedDate DESC",
                 Book.class)
                 .setParameter("startDate", startDate)
                 .setParameter("endDate", endDate)
                 .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> searchBooksWithQueryFilters(String title, String author,
+                                                 BigDecimal minPrice, BigDecimal maxPrice,
+                                                 Boolean available, int offset, int limit) {
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Book b WHERE b.deletedDate IS NULL");
+
+        if (title != null && !title.trim().isEmpty()) {
+            jpql.append(" AND LOWER(b.title) LIKE LOWER(:title)");
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            jpql.append(" AND LOWER(b.author) LIKE LOWER(:author)");
+        }
+        if (minPrice != null) {
+            jpql.append(" AND b.price >= :minPrice");
+        }
+        if (maxPrice != null) {
+            jpql.append(" AND b.price <= :maxPrice");
+        }
+        if (available != null) {
+            jpql.append(" AND b.available = :available");
+        }
+
+        jpql.append(" ORDER BY b.createdDate DESC");
+
+        TypedQuery<Book> query = em.createQuery(jpql.toString(), Book.class);
+
+        if (title != null && !title.trim().isEmpty()) {
+            query.setParameter("title", "%" + title + "%");
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            query.setParameter("author", "%" + author + "%");
+        }
+        if (minPrice != null) {
+            query.setParameter("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            query.setParameter("maxPrice", maxPrice);
+        }
+        if (available != null) {
+            query.setParameter("available", available);
+        }
+
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
+
+        return query.getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countBooksWithQueryFilters(String title, String author,
+                                          BigDecimal minPrice, BigDecimal maxPrice,
+                                          Boolean available) {
+        StringBuilder jpql = new StringBuilder("SELECT COUNT(b) FROM Book b WHERE b.deletedDate IS NULL");
+
+        if (title != null && !title.trim().isEmpty()) {
+            jpql.append(" AND LOWER(b.title) LIKE LOWER(:title)");
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            jpql.append(" AND LOWER(b.author) LIKE LOWER(:author)");
+        }
+        if (minPrice != null) {
+            jpql.append(" AND b.price >= :minPrice");
+        }
+        if (maxPrice != null) {
+            jpql.append(" AND b.price <= :maxPrice");
+        }
+        if (available != null) {
+            jpql.append(" AND b.available = :available");
+        }
+
+        TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
+
+        if (title != null && !title.trim().isEmpty()) {
+            query.setParameter("title", "%" + title + "%");
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            query.setParameter("author", "%" + author + "%");
+        }
+        if (minPrice != null) {
+            query.setParameter("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            query.setParameter("maxPrice", maxPrice);
+        }
+        if (available != null) {
+            query.setParameter("available", available);
+        }
+
+        return query.getSingleResult();
     }
 }

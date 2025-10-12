@@ -88,7 +88,7 @@ class BookControllerTest {
         @DisplayName("도서 생성 성공")
         void createBook_유효한요청_생성성공() throws Exception {
             // Given
-            given(bookService.createBook(any(CreateBookRequest.class))).willReturn(BookResponse.from(testBook));
+             given(bookService.createBook(any(CreateBookRequest.class))).willReturn(BookResponse.from(testBook));
 
             // When & Then
             mockMvc.perform(post("/api/books")
@@ -103,7 +103,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("$.price").value(45000))
                     .andExpect(jsonPath("$.available").value(true));
 
-            verify(bookService).createBook(any(CreateBookRequest.class));
+             verify(bookService).createBook(any(CreateBookRequest.class));
         }
 
         @Test
@@ -152,7 +152,7 @@ class BookControllerTest {
         @DisplayName("도서 상세 조회 성공")
         void getBook_존재하는ID_조회성공() throws Exception {
             // Given
-            given(bookService.getBookById(1L)).willReturn(Optional.of(testBook));
+            given(bookService.getBookById(1L)).willReturn(Optional.of(BookResponse.from(testBook)));
 
             // When & Then
             mockMvc.perform(get("/api/books/1"))
@@ -311,7 +311,7 @@ class BookControllerTest {
         }
 
         @Test
-        @DisplayName("복합 조건 검색 (페이징)")
+        @DisplayName("복합 조건 검색 (Stream 버전 - 페이징)")
         void searchBooksWithFilters_복합조건_검색성공() throws Exception {
             // Given
             List<Book> books = List.of(testBook);
@@ -320,7 +320,7 @@ class BookControllerTest {
                     eq("Clean"), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)
             )).willReturn(bookPage);
 
-            // When & Then  
+            // When & Then
             mockMvc.perform(get("/api/books/search")
                             .param("title", "Clean")
                             .param("page", "0")
@@ -331,6 +331,31 @@ class BookControllerTest {
                     .andExpect(jsonPath("$.totalElements").value(1));
 
             verify(bookService).searchBooksWithFilters(
+                    eq("Clean"), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)
+            );
+        }
+
+        @Test
+        @DisplayName("복합 조건 검색 (JPQL Query 버전 - 페이징)")
+        void searchBooksWithQueryFilters_복합조건_검색성공() throws Exception {
+            // Given
+            List<Book> books = List.of(testBook);
+            Page<Book> bookPage = new PageImpl<>(books, PageRequest.of(0, 10), 1);
+            given(bookService.searchBooksWithQueryFilters(
+                    eq("Clean"), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)
+            )).willReturn(bookPage);
+
+            // When & Then
+            mockMvc.perform(get("/api/books/search/query")
+                            .param("title", "Clean")
+                            .param("page", "0")
+                            .param("size", "10"))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].title").value("Clean Code"))
+                    .andExpect(jsonPath("$.totalElements").value(1));
+
+            verify(bookService).searchBooksWithQueryFilters(
                     eq("Clean"), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)
             );
         }
@@ -433,7 +458,7 @@ class BookControllerTest {
         @DisplayName("도서 복원 성공")
         void restoreBook_삭제된도서_복원성공() throws Exception {
             // Given
-            given(bookService.getBookById(1L)).willReturn(Optional.of(testBook));
+            given(bookService.getBookById(1L)).willReturn(Optional.of(BookResponse.from(testBook)));
 
             // When & Then
             mockMvc.perform(patch("/api/books/1/restore"))

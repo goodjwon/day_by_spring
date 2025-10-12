@@ -205,7 +205,7 @@ class BookServiceImplTest {
             given(bookRepository.findById(1L)).willReturn(Optional.of(savedBook));
 
             // When
-            Optional<Book> result = bookService.getBookById(1L);
+            Optional<BookResponse> result = bookService.getBookById(1L);
 
             // Then
             assertThat(result).isPresent();
@@ -231,7 +231,7 @@ class BookServiceImplTest {
             given(bookRepository.findById(1L)).willReturn(Optional.of(deletedBook));
 
             // When
-            Optional<Book> result = bookService.getBookById(1L);
+            Optional<BookResponse> result = bookService.getBookById(1L);
 
             // Then
             assertThat(result).isEmpty();
@@ -244,7 +244,7 @@ class BookServiceImplTest {
             given(bookRepository.findById(999L)).willReturn(Optional.empty());
 
             // When
-            Optional<Book> result = bookService.getBookById(999L);
+            Optional<BookResponse> result = bookService.getBookById(999L);
 
             // Then
             assertThat(result).isEmpty();
@@ -624,6 +624,87 @@ class BookServiceImplTest {
             assertThat(result.getContent()).isEmpty();
             assertThat(result.getTotalElements()).isEqualTo(0);
             assertThat(result.getTotalPages()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("복합 조건으로 도서 검색 (JPQL Query 버전) - 페이징")
+        void searchBooksWithQueryFilters_복합조건_JPQL검색성공() {
+            // Given
+            List<Book> filteredBooks = List.of(
+                    savedBook, // Clean Code, Robert C. Martin, 45.99
+                    Book.builder()
+                            .id(3L)
+                            .title("Clean Architecture")
+                            .author("Robert C. Martin")
+                            .isbn("9780134494166")
+                            .price(new BigDecimal("48.99"))
+                            .available(true)
+                            .createdDate(LocalDateTime.now())
+                            .build()
+            );
+
+            given(bookRepository.searchBooksWithQueryFilters(
+                    eq("Clean"), eq("Martin"),
+                    eq(new BigDecimal("40.00")), eq(new BigDecimal("50.00")),
+                    eq(true), eq(0), eq(2)
+            )).willReturn(filteredBooks);
+
+            given(bookRepository.countBooksWithQueryFilters(
+                    eq("Clean"), eq("Martin"),
+                    eq(new BigDecimal("40.00")), eq(new BigDecimal("50.00")),
+                    eq(true)
+            )).willReturn(2L);
+
+            Pageable pageable = PageRequest.of(0, 2);
+
+            // When - "Clean"이 포함된 제목, Martin 저자, 40-50 가격 범위
+            Page<Book> result = bookService.searchBooksWithQueryFilters(
+                    "Clean", "Martin", new BigDecimal("40.00"), new BigDecimal("50.00"), true, pageable);
+
+            // Then
+            assertThat(result.getContent()).hasSize(2);  // Clean Code, Clean Architecture
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getContent()).extracting(Book::getTitle)
+                    .containsExactly("Clean Code", "Clean Architecture");
+
+            verify(bookRepository).searchBooksWithQueryFilters(
+                    eq("Clean"), eq("Martin"),
+                    eq(new BigDecimal("40.00")), eq(new BigDecimal("50.00")),
+                    eq(true), eq(0), eq(2));
+            verify(bookRepository).countBooksWithQueryFilters(
+                    eq("Clean"), eq("Martin"),
+                    eq(new BigDecimal("40.00")), eq(new BigDecimal("50.00")),
+                    eq(true));
+        }
+
+        @Test
+        @DisplayName("복합 조건 검색 (JPQL Query 버전) - 조건 없이 전체 조회")
+        void searchBooksWithQueryFilters_조건없음_전체조회() {
+            // Given
+            List<Book> allBooks = List.of(savedBook);
+            given(bookRepository.searchBooksWithQueryFilters(
+                    isNull(), isNull(), isNull(), isNull(), isNull(), eq(0), eq(10)
+            )).willReturn(allBooks);
+
+            given(bookRepository.countBooksWithQueryFilters(
+                    isNull(), isNull(), isNull(), isNull(), isNull()
+            )).willReturn(1L);
+
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Book> result = bookService.searchBooksWithQueryFilters(
+                    null, null, null, null, null, pageable);
+
+            // Then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getTotalElements()).isEqualTo(1);
+
+            verify(bookRepository).searchBooksWithQueryFilters(
+                    isNull(), isNull(), isNull(), isNull(), isNull(), eq(0), eq(10));
+            verify(bookRepository).countBooksWithQueryFilters(
+                    isNull(), isNull(), isNull(), isNull(), isNull());
         }
     }
 
